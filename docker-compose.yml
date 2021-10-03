@@ -1,0 +1,70 @@
+version: '3.8'
+
+networks:
+    app-tier:
+        driver: bridge
+services:
+    mysql: # Example Service
+        container_name: myapp_mysql
+        restart: always
+        image: mysql:5.7
+        environment:
+        - MYSQL_ROOT_PASSWORD=BasB0sa#
+        - MYSQL_PASSWORD=BasB0sa#
+        - MYSQL_DATABASE=blog
+        ports:
+        - "3306:3306"
+        volumes:
+        - myapp_mysql_data:/var/lib/mysql
+    dev:
+        depends_on:
+            - mysql  
+        container_name: nestjs_api_dev
+        image: nestjs-api-dev:1.0.0
+        build:
+            context: .
+            target: development
+            dockerfile: ./Dockerfile
+        command: npm run start:dev
+        ports:
+            - 3000:3000
+            - 9229:9229
+        # networks:
+        #     - nesjs-network
+        volumes:
+            - .:/usr/src/app
+            - /usr/src/app/node_modules
+        restart: unless-stopped
+        links:
+            - mysql
+       
+    # prod:
+    #     container_name: nestjs_api_prod
+    #     image: nestjs-api-prod:1.0.0
+    #     build:
+    #         context: .
+    #         target: production
+    #         dockerfile: ./Dockerfile
+    #     command: npm run start:prod
+    #     ports:
+    #         - 3000:3000
+    #         - 9229:9229
+    #     networks:
+    #         - nesjs-network
+    #     volumes:
+    #         - .:/usr/src/app
+    #         - /usr/src/app/node_modules
+    #     restart: unless-stopped
+
+volumes:
+  myapp_mysql_data:
+    driver: local
+
+
+# networks:
+#   default:
+#     external:
+#       name: myapp
+
+# networks:
+#     nesjs-network:
